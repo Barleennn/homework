@@ -4,182 +4,462 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Трекер Домашних Заданий</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.9/flatpickr.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.9/flatpickr.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            padding: 20px;
             background-color: #f4f4f4;
         }
-        h1 {
-            margin: 20px 0;
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
         }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .week-selector {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .date-picker {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 200px;
+        }
+
         .weekdays {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .day {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .day h2 {
+            margin-top: 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            color: #444;
+        }
+
+        .subjects {
             display: flex;
             flex-direction: column;
-            align-items: center;
-            width: 100%;
+            gap: 10px;
         }
-        .row {
-            display: flex;
-            justify-content: center;
-            margin: 10px 0;
-            flex-wrap: wrap;
-        }
-        .day {
-            background: #fff;
-            padding: 10px;
-            margin: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            width: 150px;
-            text-align: center;
-        }
-        .subjects {
-            margin-top: 10px;
-        }
+
         .subject {
-            margin: 5px 0;
-            padding: 5px;
+            padding: 10px;
+            border-radius: 5px;
             cursor: pointer;
-            border-radius: 3px;
+            transition: all 0.3s ease;
         }
+
+        .subject:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
         .red {
-            background-color: #f8d7da;
-            border: 1px solid #f5c6cb;
+            background-color: #ffe5e5;
+            border: 1px solid #ffcccc;
         }
+
         .yellow {
             background-color: #fff3cd;
             border: 1px solid #ffeeba;
         }
+
         .green {
             background-color: #d4edda;
             border: 1px solid #c3e6cb;
         }
+
         #homework-modal {
             display: none;
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: #fff;
+            background: white;
             padding: 20px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            max-width: 90%;
-            width: 400px;
-            max-height: 80%;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
             overflow-y: auto;
+            z-index: 1000;
         }
-        #homework-modal h2 {
-            margin: 0 0 20px 0;
+
+        .modal-header {
+            margin-bottom: 20px;
         }
-        #homework-modal button {
-            margin-top: 10px;
+
+        .modal-content {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
+
+        input[type="text"],
+        textarea,
+        input[type="date"] {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        #save-homework {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        #save-homework:hover {
+            background-color: #45a049;
+        }
+
+        #close-modal {
+            background-color: #f44336;
+            color: white;
+        }
+
+        #close-modal:hover {
+            background-color: #da190b;
+        }
+
         .homework-list {
-            margin-top: 10px;
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
         }
+
         .homework-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 5px;
-            border-bottom: 1px solid #ccc;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
         }
-        .homework-item button {
-            margin-left: 10px;
+
+        .homework-item:last-child {
+            border-bottom: none;
         }
+
+        .delete-button {
+            background-color: #ff4444;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+
         @media (max-width: 768px) {
-            .row {
-                flex-direction: column;
-                align-items: center;
+            .weekdays {
+                grid-template-columns: 1fr;
             }
-            .day {
-                width: 90%;
+
+            #homework-modal {
+                width: 95%;
+                padding: 15px;
             }
         }
+/* Стили для темной темы */
+body.dark-theme {
+    background-color: #333; /* Цвет фона для темной темы */
+    color: #fff; /* Цвет текста для темной темы */
+}
+
+body.dark-theme .day {
+    background: #444; /* Цвет фона для карточек дней */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3); /* Тень для карточек дней */
+}
+
+body.dark-theme .day h2 {
+    color: #fff; /* Цвет заголовков дней */
+    border-bottom-color: #555; /* Цвет нижней границы заголовков */
+}
+
+body.dark-theme #homework-modal {
+    background: #444; /* Цвет фона модального окна */
+    color: #fff; /* Цвет текста в модальном окне */
+}
+
+body.dark-theme input[type="text"],
+body.dark-theme textarea {
+    background: #555; /* Цвет фона для текстовых полей */
+    color: #fff; /* Цвет текста в текстовых полях */
+    border-color: #666; /* Цвет границы текстовых полей */
+}
+
+body.dark-theme .subject {
+    color: #fff; /* Цвет текста для предметов */
+}
+
+body.dark-theme .delete-button {
+    background-color: #ff4444; /* Цвет кнопки удаления в темной теме */
+}
+
+body.dark-theme .delete-button:hover {
+    background-color: #da190b; /* Цвет кнопки удаления при наведении */
+}
+
+/* Стили для переключателя */
+.theme-switch-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.theme-switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+    margin-right: 10px;
+}
+
+.theme-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+}
+
+input:checked + .slider {
+    background-color: #2196F3;
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+.theme-label {
+    color: #333; /* Цвет метки для переключателя */
+}
+
+body.dark-theme .theme-label {
+    color: #fff; /* Цвет метки для переключателя в темной теме */
+}
+}
+
     </style>
 </head>
 <body>
-    <h1>HomeWork</h1>
-    <div class="weekdays">
-        <div class="row">
-            <div class="day" data-day="monday">
-                <h2>Понедельник</h2>
-                <div class="subjects">
-                    <div class="subject red" data-subject="math">Математический анализ</div>
-                    <div class="subject red" data-subject="science">Математический анализ</div>
-                    <div class="subject red" data-subject="history">Социология</div>
-                </div>
-            </div>
-            <div class="day" data-day="tuesday">
-                <h2>Вторник</h2>
-                <div class="subjects">
-                    <div class="subject red" data-subject="math">История</div>
-                    <div class="subject red" data-subject="science">История</div>
-                    <div class="subject red" data-subject="history">Казахский-руский</div>
-                    <div class="subject red" data-subject="history">Казахский-руский</div>
-                    <div class="subject red" data-subject="history">История лекция</div>
-                </div>
-            </div>
-            <div class="day" data-day="wednesday">
-                <h2>Среда</h2>
-                <div class="subjects">
-                    <div class="subject red" data-subject="math">Английский</div>
-                    <div class="subject red" data-subject="science">Английский</div>
-                    <div class="subject red" data-subject="history">Математика лекция</div>
-                    <div class="subject red" data-subject="history">Математика лекция</div>
-                </div>
-            </div>
+<div class="theme-switch-wrapper">
+    <label class="theme-switch">
+        <input type="checkbox" id="theme-toggle">
+        <span class="slider round"></span>
+    </label>
+    <span class="theme-label">Темная тема</span>
+</div>
+    <div class="container">
+        <h1></h1>
+        
+        <div class="week-selector">
+            <input type="text" id="week-picker" class="date-picker" placeholder="Выберите неделю">
         </div>
-        <div class="row">
-            <div class="day" data-day="thursday">
-                <h2>Четверг</h2>
-                <div class="subjects">
-                    <div class="subject red" data-subject="math">Казахский-Руский</div>
-                    <div class="subject red" data-subject="science">Социология</div>
-                    <div class="subject red" data-subject="history">Социология</div>
-                </div>
-            </div>
-            <div class="day" data-day="friday">
-                <h2>Пятница</h2>
-                <div class="subjects">
-                    <div class="subject red" data-subject="math">Английский</div>
-                    
-                </div>
-            </div>
+
+        <div class="weekdays">
+    <div class="day" data-day="monday">
+        <h2>Понедельник</h2>
+        <div class="subjects">
+            <div class="subject red" data-subject="math">Математический анализ</div>
+            <div class="subject red" data-subject="science">Математический анализ</div>
+            <div class="subject red" data-subject="history">Социология</div>
         </div>
     </div>
+    <div class="day" data-day="tuesday">
+        <h2>Вторник</h2>
+        <div class="subjects">
+            <div class="subject red" data-subject="math">История</div>
+            <div class="subject red" data-subject="science">История</div>
+            <div class="subject red" data-subject="history">Казахский-руский</div>
+            <div class="subject red" data-subject="history">Казахский-руский</div>
+            <div class="subject red" data-subject="history">История лекция</div>
+        </div>
+    </div>
+    <div class="day" data-day="wednesday">
+        <h2>Среда</h2>
+        <div class="subjects">
+            <div class="subject red" data-subject="math">Английский</div>
+            <div class="subject red" data-subject="science">Английский</div>
+            <div class="subject red" data-subject="history">Математика лекция</div>
+            <div class="subject red" data-subject="history">Математика лекция</div>
+        </div>
+    </div>
+    <div class="day" data-day="thursday">
+        <h2>Четверг</h2>
+        <div class="subjects">
+            <div class="subject red" data-subject="math">Казахский-Руский</div>
+            <div class="subject red" data-subject="science">Социология</div>
+            <div class="subject red" data-subject="history">Социология</div>
+        </div>
+    </div>
+    <div class="day" data-day="friday">
+        <h2>Пятница</h2>
+        <div class="subjects">
+            <div class="subject red" data-subject="math">Английский</div>
+        </div>
+    </div>
+</div>
 
-    <div id="homework-modal">
-        <h2>Управление Домашней Работой</h2>
-        <input type="text" id="user-name" placeholder="Ваше имя" required>
-        <textarea id="homework-text" placeholder="Введите детали домашней работы"></textarea>
-        <input type="file" id="homework-file" multiple accept=".jpg,.jpeg,.png,.pdf,.docx">
-        <button id="save-homework">Сохранить Домашнюю Работу</button>
-        <button id="close-modal">Закрыть</button>
-        <div class="homework-list"></div>
+        <div id="homework-modal">
+            <div class="modal-header">
+                <h2>Управление домашними заданиями</h2>
+            </div>
+
+            <div class="modal-content">
+                <input type="text" id="user-name" placeholder="Ваше имя" required>
+                <textarea id="homework-text" placeholder="Введите детали домашнего задания"></textarea>
+                <input type="file" id="homework-file" multiple accept=".jpg,.jpeg,.png,.pdf,.docx">
+                <div class="button-group">
+                    <button id="save-homework">Сохранить домашнее задание</button>
+                    <button id="close-modal">Закрыть</button>
+                </div>
+
+                <div class="homework-list"></div>
+            </div>
+        </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            const themeToggle = document.getElementById('theme-toggle');
             const subjects = document.querySelectorAll('.subject');
             const modal = document.getElementById('homework-modal');
             const userNameInput = document.getElementById('user-name');
             const homeworkText = document.getElementById('homework-text');
             const homeworkFile = document.getElementById('homework-file');
+            const homeworkDueDate = document.getElementById('homework-due-date');
             const saveHomeworkButton = document.getElementById('save-homework');
             const closeHomeworkButton = document.getElementById('close-modal');
             const homeworkList = document.querySelector('.homework-list');
+            const weekPicker = document.getElementById('week-picker');
+
+            // Инициализация выбора недели
+            flatpickr(weekPicker, {
+                weekNumbers: true,
+                altInput: true,
+                altFormat: "Неделя W, Y",
+                dateFormat: "Y-W",
+                defaultDate: new Date(),
+                onChange: function(selectedDates, dateStr, instance) {
+                    updateWeekDisplay(selectedDates[0]);
+                }
+
+            });
+            updateWeekDisplay(new Date());
+
+            function updateWeekDisplay(date) {
+    const weekStart = new Date(date);
+    weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1);
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekEnd.getDate() + 6);
+
+    const days = document.querySelectorAll('.day');
+    days.forEach((day, index) => {
+        const currentDate = new Date(weekStart);
+        currentDate.setDate(currentDate.getDate() + index);
+        day.querySelector('h2').textContent = `${getDayName(currentDate.getDay())} (${currentDate.toLocaleDateString()})`;
+        day.dataset.date = currentDate.toISOString().split('T')[0];
+    });
+
+    loadAllHomework(); // Добавлен вызов этой функции
+}
+// Проверяем сохраненную тему
+const savedTheme = localStorage.getItem('theme');
+if (savedTheme === 'dark') {
+    document.body.classList.add('dark-theme');
+    themeToggle.checked = true;
+}
+
+// Обработчик переключения темы
+themeToggle.addEventListener('change', function() {
+    if (this.checked) {
+        document.body.classList.add('dark-theme');
+        localStorage.setItem('theme', 'dark');
+    } else {
+        document.body.classList.remove('dark-theme');
+        localStorage.setItem('theme', 'light');
+    }
+});
+
+            function getDayName(dayIndex) {
+                const days = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+                return days[dayIndex];
+            }
 
             subjects.forEach(subject => {
                 subject.addEventListener('click', function () {
-                    const day = this.closest('.day').dataset.day;
+                    const day = this.closest('.day').dataset.date;
                     const subjectName = this.dataset.subject;
 
                     modal.dataset.day = day;
@@ -194,111 +474,151 @@
                 modal.style.display = 'none';
             });
 
-            saveHomeworkButton.addEventListener('click', function () {
-                const day = modal.dataset.day;
-                const subject = modal.dataset.subject;
-                const userName = userNameInput.value.trim();
-                const homework = homeworkText.value.trim();
-                const files = Array.from(homeworkFile.files);
+            saveHomeworkButton.addEventListener('click', function() {
+    const day = modal.dataset.day;
+    const subject = modal.dataset.subject;
+    const userName = userNameInput.value.trim();
+    const homework = homeworkText.value.trim();
+    const files = Array.from(homeworkFile.files);
 
-                if (userName && (homework || files.length)) {
-                    saveHomework(day, subject, userName, homework, files);
-                    userNameInput.value = '';
-                    homeworkText.value = '';
-                    homeworkFile.value = '';
-                    modal.style.display = 'none';
-                    updateSubjectStatus(day, subject);
-                } else {
-                    alert('Пожалуйста, введите ваше имя и детали домашней работы.');
-                }
-            });
+    if (userName && (homework || files.length)) {
+        saveHomework(day, subject, userName, homework, files);
+        userNameInput.value = '';
+        homeworkText.value = '';
+        homeworkFile.value = '';
+        modal.style.display = 'none';
+    } else {
+        alert('Пожалуйста, введите ваше имя и детали домашнего задания.');
+    }
+});
 
             function saveHomework(day, subject, userName, homework, files) {
-                let homeworkData = JSON.parse(localStorage.getItem('homeworkData')) || {};
-                if (!homeworkData[day]) {
-                    homeworkData[day] = {};
-                }
-                if (!homeworkData[day][subject]) {
-                    homeworkData[day][subject] = [];
-                }
-                if (homework) {
-                    homeworkData[day][subject].push({ type: 'text', content: homework, user: userName });
-                }
-                files.forEach(file => {
-                    const reader = new FileReader();
-                    reader.onload = function (e) {
-                        const fileData = { type: 'file', content: e.target.result, name: file.name, user: userName };
-                        homeworkData[day][subject].push(fileData);
-                        localStorage.setItem('homeworkData', JSON.stringify(homeworkData));
-                        loadHomework(day, subject); // Reload to show new file
-                    };
-                    reader.readAsDataURL(file);
-                });
-                localStorage.setItem('homeworkData', JSON.stringify(homeworkData));
-                loadHomework(day, subject); // Reload to show new homework
+    let homeworkData = JSON.parse(localStorage.getItem('homeworkData')) || {};
+    if (!homeworkData[day]) {
+        homeworkData[day] = {};
+    }
+    if (!homeworkData[day][subject]) {
+        homeworkData[day][subject] = [];
+    }
+    
+    if (homework) {
+        homeworkData[day][subject].push({ 
+            type: 'text', 
+            content: homework, 
+            user: userName 
+        });
+    }
+
+    let filesProcessed = 0;
+    const totalFiles = files.length;
+
+    const processFile = (file) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            homeworkData[day][subject].push({ 
+                type: 'file', 
+                content: e.target.result, 
+                name: file.name, 
+                user: userName 
+            });
+            
+            filesProcessed++;
+            if (filesProcessed === totalFiles) {
+                finalizeSave();
             }
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const finalizeSave = () => {
+        localStorage.setItem('homeworkData', JSON.stringify(homeworkData));
+        loadHomework(day, subject);
+        updateSubjectStatus(day, subject);
+    };
+
+    if (totalFiles > 0) {
+        files.forEach(processFile);
+    } else {
+        finalizeSave();
+    }
+}
 
             function loadHomework(day, subject) {
-                homeworkList.innerHTML = '';
-                let homeworkData = JSON.parse(localStorage.getItem('homeworkData')) || {};
-                if (homeworkData[day] && homeworkData[day][subject]) {
-                    homeworkData[day][subject].forEach((hw, index) => {
-                        const div = document.createElement('div');
-                        div.className = 'homework-item';
-                        div.textContent = `${hw.user}: `;
-                        if (hw.type === 'text') {
-                            div.textContent += hw.content;
-                        } else if (hw.type === 'file') {
-                            const link = document.createElement('a');
-                            link.href = hw.content;
-                            link.download = hw.name;
-                            link.textContent = hw.name;
-                            div.appendChild(link);
-                        }
-                        const deleteButton = document.createElement('button');
-                        deleteButton.textContent = 'Удалить';
-                        deleteButton.addEventListener('click', function () {
-                            deleteHomework(day, subject, index);
-                        });
-                        div.appendChild(deleteButton);
-                        homeworkList.appendChild(div);
-                    });
-                }
+    homeworkList.innerHTML = '';
+    let homeworkData = JSON.parse(localStorage.getItem('homeworkData')) || {};
+    if (homeworkData[day] && homeworkData[day][subject]) {
+        homeworkData[day][subject].forEach((hw, index) => {
+            const div = document.createElement('div');
+            div.className = 'homework-item';
+            
+            const userSpan = document.createElement('span');
+            userSpan.textContent = `${hw.user}: `;
+            div.appendChild(userSpan);
+            
+            if (hw.type === 'text') {
+                const textSpan = document.createElement('span');
+                textSpan.textContent = hw.content;
+                div.appendChild(textSpan);
+            } else if (hw.type === 'file') {
+                const link = document.createElement('a');
+                link.href = hw.content;
+                link.download = hw.name;
+                link.textContent = hw.name;
+                div.appendChild(link);
             }
+            
+            const deleteButton = document.createElement('button');
+            deleteButton.className = 'delete-button';
+            deleteButton.textContent = 'Удалить';
+            deleteButton.addEventListener('click', function() {
+                deleteHomework(day, subject, index);
+            });
+            div.appendChild(deleteButton);
+            
+            homeworkList.appendChild(div);
+        });
+    }
+    updateSubjectStatus(day, subject); // Добавлена эта строка
+}
 
             function deleteHomework(day, subject, index) {
-                let homeworkData = JSON.parse(localStorage.getItem('homeworkData')) || {};
-                if (homeworkData[day] && homeworkData[day][subject]) {
-                    homeworkData[day][subject].splice(index, 1);
-                    localStorage.setItem('homeworkData', JSON.stringify(homeworkData));
-                    loadHomework(day, subject);
-                    updateSubjectStatus(day, subject);
-                }
-            }
+    let homeworkData = JSON.parse(localStorage.getItem('homeworkData')) || {};
+    if (homeworkData[day] && homeworkData[day][subject]) {
+        homeworkData[day][subject].splice(index, 1);
+        localStorage.setItem('homeworkData', JSON.stringify(homeworkData));
+        loadHomework(day, subject);
+        updateSubjectStatus(day, subject);
+    }
+}
 
             function updateSubjectStatus(day, subject) {
-                let homeworkData = JSON.parse(localStorage.getItem('homeworkData')) || {};
-                const subjectElement = document.querySelector(`.day[data-day="${day}"] .subject[data-subject="${subject}"]`);
-                if (homeworkData[day] && homeworkData[day][subject]) {
-                    if (homeworkData[day][subject].length > 0) {
-                        subjectElement.classList.remove('red', 'yellow');
-                        subjectElement.classList.add('green');
-                    } else {
-                        subjectElement.classList.remove('red', 'green');
-                        subjectElement.classList.add('yellow');
-                    }
-                } else {
-                    subjectElement.classList.remove('green', 'yellow');
-                    subjectElement.classList.add('red');
-                }
-            }
+    let homeworkData = JSON.parse(localStorage.getItem('homeworkData')) || {};
+    const subjectElement = document.querySelector(`.day[data-date="${day}"] .subject[data-subject="${subject}"]`);
+    
+    if (subjectElement) {
+        if (homeworkData[day] && homeworkData[day][subject] && homeworkData[day][subject].length > 0) {
+            subjectElement.classList.remove('red', 'yellow');
+            subjectElement.classList.add('green');
+        } else {
+            subjectElement.classList.remove('green', 'yellow');
+            subjectElement.classList.add('red');
+        }
+    }
+}
 
-            // Initial status update
-            subjects.forEach(subject => {
-                const day = subject.closest('.day').dataset.day;
-                const subjectName = subject.dataset.subject;
-                updateSubjectStatus(day, subjectName);
-            });
+            function loadAllHomework() {
+    const days = document.querySelectorAll('.day');
+    days.forEach(day => {
+        const dayDate = day.dataset.date;
+        const subjects = day.querySelectorAll('.subject');
+        subjects.forEach(subject => {
+            const subjectName = subject.dataset.subject;
+            updateSubjectStatus(dayDate, subjectName); // Изменена эта строка
+        });
+    });
+}
+
+            loadAllHomework();
         });
     </script>
 </body>
